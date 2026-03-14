@@ -1,0 +1,11 @@
+services:
+  sms-sender:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - CM_PRODUCT_TOKEN=${CM_PRODUCT_TOKEN}
+      - AUTH_MODE=${AUTH_MODE:-password}
+      - ACCESS_PASSWORD=${ACCESS_PASSWORD:-changeme}
+      - DEFAULT_SENDER=${DEFAULT_SENDER:-SendSMS}
+    restart: unless-stopped
