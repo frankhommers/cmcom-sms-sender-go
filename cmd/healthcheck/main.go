@@ -1,5 +1,3 @@
-//go:build healthcheck
-
 package main
 
 import (
