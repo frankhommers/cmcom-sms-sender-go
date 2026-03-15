@@ -9,10 +9,11 @@ import { Input } from '@/components/ui/input'
 
 type LoginFormProps = {
   authMode: string
+  oidcLoginButtonText?: string
   onLoginSuccess: () => void
 }
 
-export function LoginForm({ authMode, onLoginSuccess }: LoginFormProps) {
+export function LoginForm({ authMode, oidcLoginButtonText = 'Sign in', onLoginSuccess }: LoginFormProps) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -51,7 +52,7 @@ export function LoginForm({ authMode, onLoginSuccess }: LoginFormProps) {
         <CardDescription>
           {authMode === 'password'
             ? 'Voer je wachtwoord in om verder te gaan.'
-            : 'Log in met je bedrijfsaccount.'}
+            : 'Sign in to continue.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -64,7 +65,7 @@ export function LoginForm({ authMode, onLoginSuccess }: LoginFormProps) {
 
         {authMode === 'oidc' ? (
           <Button className="w-full" size="lg" onClick={handleOidc}>
-            Sign in with SSO
+            {oidcLoginButtonText}
           </Button>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">

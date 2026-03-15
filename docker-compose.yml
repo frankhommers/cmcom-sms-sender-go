@@ -8,4 +8,6 @@ services:
       - AUTH_MODE=${AUTH_MODE:-password}
       - ACCESS_PASSWORD=${ACCESS_PASSWORD:-changeme}
       - DEFAULT_SENDER=${DEFAULT_SENDER:-SendSMS}
+      - OIDC_SKIP_LOGIN_PAGE=${OIDC_SKIP_LOGIN_PAGE:-false}
+      - OIDC_LOGIN_BUTTON_TEXT=${OIDC_LOGIN_BUTTON_TEXT:-Sign in}
     restart: unless-stopped

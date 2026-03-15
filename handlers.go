@@ -100,8 +100,10 @@ func HandleCheckStatus(cfg *Config) http.HandlerFunc {
 func HandleGetConfig(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]any{
-			"defaultSender": cfg.DefaultSender,
-			"authMode":      cfg.AuthMode,
+			"defaultSender":       cfg.DefaultSender,
+			"authMode":            cfg.AuthMode,
+			"oidcSkipLoginPage":   cfg.OIDCSkipLoginPage,
+			"oidcLoginButtonText": cfg.OIDCLoginButtonText,
 		})
 	}
 }

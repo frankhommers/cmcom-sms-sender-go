@@ -7,28 +7,32 @@ import (
 )
 
 type Config struct {
-	CMProductToken   string
-	AuthMode         string
-	AccessPassword   string
-	OIDCIssuerURL    string
-	OIDCClientID     string
-	OIDCClientSecret string
-	OIDCRedirectURL  string
-	DefaultSender    string
-	Port             string
+	CMProductToken      string
+	AuthMode            string
+	AccessPassword      string
+	OIDCIssuerURL       string
+	OIDCClientID        string
+	OIDCClientSecret    string
+	OIDCRedirectURL     string
+	OIDCSkipLoginPage   bool
+	OIDCLoginButtonText string
+	DefaultSender       string
+	Port                string
 }
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		CMProductToken:   strings.TrimSpace(os.Getenv("CM_PRODUCT_TOKEN")),
-		AuthMode:         defaultIfEmpty(strings.TrimSpace(os.Getenv("AUTH_MODE")), "password"),
-		AccessPassword:   os.Getenv("ACCESS_PASSWORD"),
-		OIDCIssuerURL:    strings.TrimSpace(os.Getenv("OIDC_ISSUER_URL")),
-		OIDCClientID:     strings.TrimSpace(os.Getenv("OIDC_CLIENT_ID")),
-		OIDCClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
-		OIDCRedirectURL:  strings.TrimSpace(os.Getenv("OIDC_REDIRECT_URL")),
-		DefaultSender:    defaultIfEmpty(strings.TrimSpace(os.Getenv("DEFAULT_SENDER")), "SendSMS"),
-		Port:             defaultIfEmpty(strings.TrimSpace(os.Getenv("PORT")), "8080"),
+		CMProductToken:      strings.TrimSpace(os.Getenv("CM_PRODUCT_TOKEN")),
+		AuthMode:            defaultIfEmpty(strings.TrimSpace(os.Getenv("AUTH_MODE")), "password"),
+		AccessPassword:      os.Getenv("ACCESS_PASSWORD"),
+		OIDCIssuerURL:       strings.TrimSpace(os.Getenv("OIDC_ISSUER_URL")),
+		OIDCClientID:        strings.TrimSpace(os.Getenv("OIDC_CLIENT_ID")),
+		OIDCClientSecret:    os.Getenv("OIDC_CLIENT_SECRET"),
+		OIDCRedirectURL:     strings.TrimSpace(os.Getenv("OIDC_REDIRECT_URL")),
+		OIDCSkipLoginPage:   strings.EqualFold(strings.TrimSpace(os.Getenv("OIDC_SKIP_LOGIN_PAGE")), "true"),
+		OIDCLoginButtonText: defaultIfEmpty(strings.TrimSpace(os.Getenv("OIDC_LOGIN_BUTTON_TEXT")), "Sign in"),
+		DefaultSender:       defaultIfEmpty(strings.TrimSpace(os.Getenv("DEFAULT_SENDER")), "SendSMS"),
+		Port:                defaultIfEmpty(strings.TrimSpace(os.Getenv("PORT")), "8080"),
 	}
 
 	cfg.Validate()

@@ -12,6 +12,8 @@ type AuthState = {
   authenticated: boolean
   authMode: string
   defaultSender: string
+  oidcSkipLoginPage: boolean
+  oidcLoginButtonText: string
 }
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
     authenticated: false,
     authMode: 'password',
     defaultSender: '',
+    oidcSkipLoginPage: false,
+    oidcLoginButtonText: 'Sign in',
   })
   const [trackingReferences, setTrackingReferences] = useState<string[] | null>(null)
   const [resumeReferences, setResumeReferences] = useState<string[] | null>(null)
@@ -32,6 +36,8 @@ function App() {
         authenticated: auth.authenticated,
         authMode: auth.authMode || config.authMode || 'password',
         defaultSender: config.defaultSender || '',
+        oidcSkipLoginPage: config.oidcSkipLoginPage ?? false,
+        oidcLoginButtonText: config.oidcLoginButtonText || 'Sign in',
       })
     } catch {
       setAuthState((prev) => ({
@@ -87,6 +93,17 @@ function App() {
     setTrackingReferences(null)
     setResumeReferences(null)
   }
+
+  useEffect(() => {
+    if (
+      !authState.loading &&
+      !authState.authenticated &&
+      authState.authMode === 'oidc' &&
+      authState.oidcSkipLoginPage
+    ) {
+      window.location.href = '/api/auth/oidc'
+    }
+  }, [authState.loading, authState.authenticated, authState.authMode, authState.oidcSkipLoginPage])
 
   if (authState.loading) {
     return (
@@ -145,6 +162,7 @@ function App() {
         ) : (
           <LoginForm
             authMode={authState.authMode}
+            oidcLoginButtonText={authState.oidcLoginButtonText}
             onLoginSuccess={() => {
               setAuthState((prev) => ({ ...prev, authenticated: true }))
             }}

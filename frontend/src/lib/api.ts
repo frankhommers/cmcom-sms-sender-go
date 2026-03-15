@@ -35,6 +35,8 @@ type AuthStatus = {
 type ConfigResult = {
   defaultSender: string
   authMode: string
+  oidcSkipLoginPage: boolean
+  oidcLoginButtonText: string
 }
 
 async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {
