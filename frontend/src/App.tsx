@@ -14,6 +14,8 @@ type AuthState = {
   defaultSender: string
   oidcSkipLoginPage: boolean
   oidcLoginButtonText: string
+  copyCurlEnabled: boolean
+  copyCurlToken: string
 }
 
 function App() {
@@ -24,6 +26,8 @@ function App() {
     defaultSender: '',
     oidcSkipLoginPage: false,
     oidcLoginButtonText: 'Sign in',
+    copyCurlEnabled: true,
+    copyCurlToken: '',
   })
   const [trackingReferences, setTrackingReferences] = useState<string[] | null>(null)
   const [resumeReferences, setResumeReferences] = useState<string[] | null>(null)
@@ -38,6 +42,8 @@ function App() {
         defaultSender: config.defaultSender || '',
         oidcSkipLoginPage: config.oidcSkipLoginPage ?? false,
         oidcLoginButtonText: config.oidcLoginButtonText || 'Sign in',
+        copyCurlEnabled: config.copyCurlEnabled ?? true,
+        copyCurlToken: config.copyCurlToken || '',
       })
     } catch {
       setAuthState((prev) => ({
@@ -153,6 +159,8 @@ function App() {
         {authState.authenticated ? (
           <SmsForm
             defaultSender={authState.defaultSender}
+            copyCurlEnabled={authState.copyCurlEnabled}
+            copyCurlToken={authState.copyCurlToken}
             trackingReferences={trackingReferences}
             onTrackingReferencesChange={(references) => {
               setTrackingReferences(references)

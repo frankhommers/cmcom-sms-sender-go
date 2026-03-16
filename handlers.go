@@ -104,6 +104,8 @@ func HandleGetConfig(cfg *Config) http.HandlerFunc {
 			"authMode":            cfg.AuthMode,
 			"oidcSkipLoginPage":   cfg.OIDCSkipLoginPage,
 			"oidcLoginButtonText": cfg.OIDCLoginButtonText,
+			"copyCurlEnabled":     cfg.CopyCurlEnabled,
+			"copyCurlToken":       cfg.CopyCurlToken,
 		})
 	}
 }

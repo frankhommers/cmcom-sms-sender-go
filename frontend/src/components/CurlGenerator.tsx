@@ -7,6 +7,7 @@ type CurlGeneratorProps = {
   sender: string
   recipients: string[]
   message: string
+  token?: string
 }
 
 function normalizePhone(value: string): string {
@@ -20,7 +21,7 @@ function shellSingleQuote(value: string): string {
   return value.replace(/'/g, `'"'"'`)
 }
 
-export function CurlGenerator({ sender, recipients, message }: CurlGeneratorProps) {
+export function CurlGenerator({ sender, recipients, message, token }: CurlGeneratorProps) {
   const [copied, setCopied] = useState(false)
 
   const command = useMemo(() => {
@@ -48,10 +49,10 @@ export function CurlGenerator({ sender, recipients, message }: CurlGeneratorProp
     return [
       "curl -X POST 'https://gw.cmtelecom.com/v1.0/message' \\",
       "  -H 'Content-Type: application/json' \\",
-      "  -H 'X-CM-PRODUCTTOKEN: YOUR-PRODUCT-TOKEN-HERE' \\",
+      `  -H 'X-CM-PRODUCTTOKEN: ${token || 'YOUR-PRODUCT-TOKEN-HERE'}' \\`,
       `  -d '${body}'`,
     ].join('\n')
-  }, [sender, recipients, message])
+  }, [sender, recipients, message, token])
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(command)

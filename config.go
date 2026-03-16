@@ -16,6 +16,8 @@ type Config struct {
 	OIDCRedirectURL     string
 	OIDCSkipLoginPage   bool
 	OIDCLoginButtonText string
+	CopyCurlEnabled     bool
+	CopyCurlToken       string
 	DefaultSender       string
 	Port                string
 }
@@ -31,6 +33,8 @@ func LoadConfig() *Config {
 		OIDCRedirectURL:     strings.TrimSpace(os.Getenv("OIDC_REDIRECT_URL")),
 		OIDCSkipLoginPage:   strings.EqualFold(strings.TrimSpace(os.Getenv("OIDC_SKIP_LOGIN_PAGE")), "true"),
 		OIDCLoginButtonText: defaultIfEmpty(strings.TrimSpace(os.Getenv("OIDC_LOGIN_BUTTON_TEXT")), "Sign in"),
+		CopyCurlEnabled:     !strings.EqualFold(strings.TrimSpace(os.Getenv("COPY_CURL_ENABLED")), "false"),
+		CopyCurlToken:       strings.TrimSpace(os.Getenv("COPY_CURL_TOKEN")),
 		DefaultSender:       defaultIfEmpty(strings.TrimSpace(os.Getenv("DEFAULT_SENDER")), "SendSMS"),
 		Port:                defaultIfEmpty(strings.TrimSpace(os.Getenv("PORT")), "8080"),
 	}

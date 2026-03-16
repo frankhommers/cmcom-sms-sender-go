@@ -10,4 +10,6 @@ services:
       - DEFAULT_SENDER=${DEFAULT_SENDER:-SendSMS}
       - OIDC_SKIP_LOGIN_PAGE=${OIDC_SKIP_LOGIN_PAGE:-false}
       - OIDC_LOGIN_BUTTON_TEXT=${OIDC_LOGIN_BUTTON_TEXT:-Sign in}
+      - COPY_CURL_ENABLED=${COPY_CURL_ENABLED:-true}
+      - COPY_CURL_TOKEN=${COPY_CURL_TOKEN:-}
     restart: unless-stopped

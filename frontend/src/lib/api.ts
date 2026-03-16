@@ -37,6 +37,8 @@ type ConfigResult = {
   authMode: string
   oidcSkipLoginPage: boolean
   oidcLoginButtonText: string
+  copyCurlEnabled: boolean
+  copyCurlToken: string
 }
 
 async function requestJson<T>(input: string, init?: RequestInit): Promise<T> {

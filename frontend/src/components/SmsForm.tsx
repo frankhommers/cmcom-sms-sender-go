@@ -16,12 +16,16 @@ import { sendSms } from '@/lib/api'
 
 type SmsFormProps = {
   defaultSender: string
+  copyCurlEnabled: boolean
+  copyCurlToken: string
   trackingReferences: string[] | null
   onTrackingReferencesChange: (references: string[] | null) => void
 }
 
 export function SmsForm({
   defaultSender,
+  copyCurlEnabled,
+  copyCurlToken,
   trackingReferences,
   onTrackingReferencesChange,
 }: SmsFormProps) {
@@ -140,23 +144,27 @@ export function SmsForm({
             </Alert>
           )}
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-2 ${copyCurlEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <Button type="submit" disabled={isSending || !canSend}>
               <Send />
               Send SMS
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowCurl((value) => !value)}
-            >
-              <TerminalSquare />
-              Genereer cURL
-            </Button>
+            {copyCurlEnabled && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowCurl((value) => !value)}
+              >
+                <TerminalSquare />
+                Genereer cURL
+              </Button>
+            )}
           </div>
         </form>
 
-        {showCurl && <CurlGenerator sender={sender} recipients={recipients} message={message} />}
+        {showCurl && copyCurlEnabled && (
+          <CurlGenerator sender={sender} recipients={recipients} message={message} token={copyCurlToken} />
+        )}
 
         {activeTrackingReferences.length > 0 && (
           <DeliveryProgress
