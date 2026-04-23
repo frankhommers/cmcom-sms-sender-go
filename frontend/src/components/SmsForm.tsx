@@ -1,4 +1,5 @@
 import { type FormEvent, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MessageSquarePlus, Send, TerminalSquare } from 'lucide-react'
 
 import { CharCounter } from '@/components/CharCounter'
@@ -13,6 +14,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useMultiStatusPolling } from '@/hooks/useStatusPolling'
 import { sendSms } from '@/lib/api'
+import type { ApiError } from '@/lib/api'
+import { translateError } from '@/lib/i18n-errors'
 
 type SmsFormProps = {
   defaultSender: string
@@ -29,10 +32,11 @@ export function SmsForm({
   trackingReferences,
   onTrackingReferencesChange,
 }: SmsFormProps) {
+  const { t } = useTranslation()
   const [sender, setSender] = useState(defaultSender)
   const [recipients, setRecipients] = useState<string[]>([])
   const [message, setMessage] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<ApiError | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
   const [showCurl, setShowCurl] = useState(false)
@@ -53,7 +57,7 @@ export function SmsForm({
     event.preventDefault()
 
     if (!canSend) {
-      setError('Controleer afzender, ontvangers en bericht.')
+      setError({ code: 'client_validation' })
       return
     }
 
@@ -65,11 +69,20 @@ export function SmsForm({
       const result = await sendSms(sender, recipients, message)
 
       if (!result.success) {
-        setError(result.error ?? 'SMS verzenden mislukt.')
+        setError(result.error ?? { code: 'send_failed' })
         return
       }
 
-      setSuccessMessage(result.message ?? 'SMS succesvol verzonden.')
+      if (typeof result.successCount === 'number' && typeof result.recipientsCount === 'number') {
+        setSuccessMessage(
+          t('sms.sendSuccessCount', {
+            success: result.successCount,
+            total: result.recipientsCount,
+          }),
+        )
+      } else {
+        setSuccessMessage(t('sms.sendSuccess'))
+      }
 
       const references = (result.results ?? [])
         .filter((recipientResult) => recipientResult.success && recipientResult.reference)
@@ -80,7 +93,7 @@ export function SmsForm({
         onTrackingReferencesChange(references)
       }
     } catch {
-      setError('SMS verzenden mislukt.')
+      setError({ code: 'send_failed' })
     } finally {
       setIsSending(false)
     }
@@ -92,54 +105,64 @@ export function SmsForm({
     onTrackingReferencesChange(null)
   }
 
+  const errorMessage = (err: ApiError): string => {
+    if (err.code === 'client_validation') {
+      return t('sms.validation')
+    }
+    if (err.code === 'send_failed') {
+      return t('sms.sendFailed')
+    }
+    return translateError(t, err)
+  }
+
   return (
     <Card className="w-full max-w-[480px]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <MessageSquarePlus className="size-5 text-indigo-600" />
-          Compose SMS
+          {t('sms.compose')}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSend} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="sender">Sender</Label>
+            <Label htmlFor="sender">{t('sms.sender')}</Label>
             <Input
               id="sender"
               maxLength={11}
               value={sender}
               onChange={(event) => setSender(event.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-              placeholder="CompanyName"
+              placeholder={t('sms.senderPlaceholder')}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="recipients">Recipients</Label>
+            <Label htmlFor="recipients">{t('sms.recipients')}</Label>
             <RecipientInput recipients={recipients} onChange={setRecipients} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="message">Message</Label>
+            <Label htmlFor="message">{t('sms.message')}</Label>
             <Textarea
               id="message"
               rows={5}
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="Typ je SMS-bericht"
+              placeholder={t('sms.messagePlaceholder')}
             />
             <CharCounter text={message} />
           </div>
 
           {error && (
             <Alert variant="destructive">
-              <AlertTitle>Fout</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertTitle>{t('sms.error')}</AlertTitle>
+              <AlertDescription>{errorMessage(error)}</AlertDescription>
             </Alert>
           )}
 
           {successMessage && (
             <Alert>
-              <AlertTitle>Verzonden</AlertTitle>
+              <AlertTitle>{t('sms.sent')}</AlertTitle>
               <AlertDescription>{successMessage}</AlertDescription>
             </Alert>
           )}
@@ -147,7 +170,7 @@ export function SmsForm({
           <div className={`grid gap-2 ${copyCurlEnabled ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <Button type="submit" disabled={isSending || !canSend}>
               <Send />
-              Send SMS
+              {t('sms.send')}
             </Button>
             {copyCurlEnabled && (
               <Button
@@ -156,7 +179,7 @@ export function SmsForm({
                 onClick={() => setShowCurl((value) => !value)}
               >
                 <TerminalSquare />
-                Genereer cURL
+                {t('sms.generateCurl')}
               </Button>
             )}
           </div>

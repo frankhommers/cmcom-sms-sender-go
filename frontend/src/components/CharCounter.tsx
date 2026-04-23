@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 import { calculateSmsCount } from '@/lib/sms-utils'
 import { cn } from '@/lib/utils'
 
@@ -6,12 +8,14 @@ type CharCounterProps = {
 }
 
 export function CharCounter({ text }: CharCounterProps) {
+  const { t } = useTranslation()
   const smsInfo = calculateSmsCount(text)
 
   return (
     <div className="mt-2 flex items-center justify-between text-xs">
       <span className="text-muted-foreground">
-        {smsInfo.chars} characters {smsInfo.isUnicode ? '(Unicode)' : '(GSM-7)'}
+        {t('charCounter.characters', { count: smsInfo.chars })}{' '}
+        {smsInfo.isUnicode ? t('charCounter.unicode') : t('charCounter.gsm7')}
       </span>
       <span
         className={cn(
@@ -21,7 +25,7 @@ export function CharCounter({ text }: CharCounterProps) {
           smsInfo.count === 1 && 'text-muted-foreground',
         )}
       >
-        {smsInfo.count} {smsInfo.count === 1 ? 'SMS' : 'SMS messages'}
+        {t('charCounter.sms', { count: smsInfo.count })}
       </span>
     </div>
   )

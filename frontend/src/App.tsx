@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { LogOut, RotateCcw, X } from 'lucide-react'
 
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { LoginForm } from '@/components/LoginForm'
 import { SmsForm } from '@/components/SmsForm'
 import { Button } from '@/components/ui/button'
@@ -19,13 +21,14 @@ type AuthState = {
 }
 
 function App() {
+  const { t } = useTranslation()
   const [authState, setAuthState] = useState<AuthState>({
     loading: true,
     authenticated: false,
     authMode: 'password',
     defaultSender: '',
     oidcSkipLoginPage: false,
-    oidcLoginButtonText: 'Sign in',
+    oidcLoginButtonText: '',
     copyCurlEnabled: true,
     copyCurlToken: '',
   })
@@ -41,7 +44,7 @@ function App() {
         authMode: auth.authMode || config.authMode || 'password',
         defaultSender: config.defaultSender || '',
         oidcSkipLoginPage: config.oidcSkipLoginPage ?? false,
-        oidcLoginButtonText: config.oidcLoginButtonText || 'Sign in',
+        oidcLoginButtonText: config.oidcLoginButtonText || '',
         copyCurlEnabled: config.copyCurlEnabled ?? true,
         copyCurlToken: config.copyCurlToken || '',
       })
@@ -114,7 +117,7 @@ function App() {
   if (authState.loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 via-white to-slate-100 p-4">
-        <p className="text-sm text-muted-foreground">Loading SMS Sender...</p>
+        <p className="text-sm text-muted-foreground">{t('app.loading')}</p>
       </main>
     )
   }
@@ -122,14 +125,15 @@ function App() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-slate-100 p-4">
       <div className="mx-auto flex w-full max-w-[480px] flex-col gap-3 py-10">
-        {authState.authenticated && (
-          <header className="flex items-center justify-end">
+        <header className="flex items-center justify-between gap-2">
+          <LanguageSwitcher />
+          {authState.authenticated && (
             <Button variant="outline" onClick={handleLogout}>
               <LogOut />
-              Logout
+              {t('app.logout')}
             </Button>
-          </header>
-        )}
+          )}
+        </header>
 
         {authState.authenticated &&
           resumeReferences &&
@@ -139,7 +143,7 @@ function App() {
             <CardContent className="flex items-center justify-between pt-4">
               <div className="flex items-center gap-2 text-sm text-indigo-700">
                 <RotateCcw className="size-4" />
-                Laatste SMS tracken ({resumeReferences.length} ontvangers)
+                {t('app.resumeTracking', { count: resumeReferences.length })}
               </div>
               <Button
                 type="button"

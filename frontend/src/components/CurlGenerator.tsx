@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Check, Copy } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ function shellSingleQuote(value: string): string {
 }
 
 export function CurlGenerator({ sender, recipients, message, token }: CurlGeneratorProps) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
 
   const command = useMemo(() => {
@@ -63,10 +65,10 @@ export function CurlGenerator({ sender, recipients, message, token }: CurlGenera
   return (
     <div className="mt-3 rounded-lg border bg-slate-50 p-3">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs font-medium text-slate-700">Generated cURL</p>
+        <p className="text-xs font-medium text-slate-700">{t('curl.title')}</p>
         <Button type="button" variant="outline" size="sm" onClick={handleCopy}>
           {copied ? <Check /> : <Copy />}
-          {copied ? 'Copied!' : 'Copy'}
+          {copied ? t('curl.copied') : t('curl.copy')}
         </Button>
       </div>
       <pre className="overflow-x-auto rounded-md bg-slate-950 p-3 text-xs leading-relaxed text-slate-100">

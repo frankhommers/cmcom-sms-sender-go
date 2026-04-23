@@ -1,5 +1,6 @@
 import { CheckCircle2, Circle, CircleAlert, LoaderCircle, XCircle } from 'lucide-react'
 import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,11 @@ type DeliveryProgressProps = {
   onStopTracking: () => void
 }
 
-const STEP_LABELS = ['Verzenden', 'Geaccepteerd', 'Afgeleverd']
+const STEP_LABEL_KEYS = [
+  'delivery.step.sending',
+  'delivery.step.accepted',
+  'delivery.step.delivered',
+] as const
 
 function deriveStepStates(statusCode: number | null): StatusTone[] {
   if (statusCode === null) {
@@ -65,6 +70,7 @@ export function DeliveryProgress({
   isPolling,
   onStopTracking,
 }: DeliveryProgressProps) {
+  const { t } = useTranslation()
   const hasFailed = statuses.some((status) => status.statusCode === 1 || status.statusCode === 3)
   const allDelivered = statuses.length > 0 && statuses.every((status) => status.statusCode === 2)
   const statusText = statuses.map((status) => `${status.recipient}: ${status.statusText}`).join(' | ')
@@ -73,17 +79,17 @@ export function DeliveryProgress({
     <div className="mt-4 rounded-lg border bg-background p-4">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">Delivery status</h3>
+          <h3 className="text-sm font-semibold">{t('delivery.title')}</h3>
           {hasFailed ? (
-            <Badge variant="destructive">Failed</Badge>
+            <Badge variant="destructive">{t('delivery.badgeFailed')}</Badge>
           ) : allDelivered ? (
-            <Badge className="bg-emerald-600 text-white">Delivered</Badge>
+            <Badge className="bg-emerald-600 text-white">{t('delivery.badgeDelivered')}</Badge>
           ) : (
-            <Badge variant="outline">In progress</Badge>
+            <Badge variant="outline">{t('delivery.badgeInProgress')}</Badge>
           )}
         </div>
         <Button type="button" size="sm" variant="outline" onClick={onStopTracking}>
-          Stop Tracking
+          {t('delivery.stopTracking')}
         </Button>
       </div>
 
@@ -99,8 +105,8 @@ export function DeliveryProgress({
               </div>
 
               <div className="grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-2">
-                {STEP_LABELS.map((label, index) => (
-                  <Fragment key={`${recipientStatus.reference}-${label}`}>
+                {STEP_LABEL_KEYS.map((labelKey, index) => (
+                  <Fragment key={`${recipientStatus.reference}-${labelKey}`}>
                     <div className="flex flex-col items-center gap-1 text-center">
                       <div className={stepClassName(states[index])}>{iconForState(states[index])}</div>
                       <span
@@ -112,10 +118,10 @@ export function DeliveryProgress({
                           states[index] === 'failed' && 'text-red-700',
                         )}
                       >
-                        {label}
+                        {t(labelKey)}
                       </span>
                     </div>
-                    {index < STEP_LABELS.length - 1 && (
+                    {index < STEP_LABEL_KEYS.length - 1 && (
                       <Separator
                         orientation="horizontal"
                         className={cn(
@@ -129,27 +135,33 @@ export function DeliveryProgress({
               </div>
 
               {recipientStatus.details && (
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-[11px] font-medium text-slate-600">
-                    Delivery details
-                  </summary>
+                <div className="mt-2">
+                  <div className="text-[11px] font-medium text-slate-600">{t('delivery.details.title')}</div>
                   <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-700">
                     {recipientStatus.details.operator && (
-                      <span>Operator: {recipientStatus.details.operator}</span>
+                      <span>
+                        {t('delivery.details.operator')}: {recipientStatus.details.operator}
+                      </span>
                     )}
                     {recipientStatus.details.country && (
-                      <span>Country: {recipientStatus.details.country}</span>
+                      <span>
+                        {t('delivery.details.country')}: {recipientStatus.details.country}
+                      </span>
                     )}
                     {typeof recipientStatus.details.price === 'number' && (
                       <span>
-                        Price: {recipientStatus.details.price} {recipientStatus.details.currency ?? ''}
+                        {t('delivery.details.price')}: {recipientStatus.details.price}{' '}
+                        {recipientStatus.details.currency ?? ''}
                       </span>
                     )}
                     {typeof recipientStatus.details.deliveryTime === 'number' && (
-                      <span>Delivery time: {recipientStatus.details.deliveryTime} ms</span>
+                      <span>
+                        {t('delivery.details.deliveryTime')}: {recipientStatus.details.deliveryTime}{' '}
+                        {t('delivery.details.ms')}
+                      </span>
                     )}
                   </div>
-                </details>
+                </div>
               )}
             </div>
           )
@@ -160,9 +172,9 @@ export function DeliveryProgress({
         <div className="flex items-center gap-2">
           <CircleAlert className="size-3.5 text-slate-500" />
           <span>
-            <strong>Status:</strong> {statusText}
+            <strong>{t('delivery.statusLabel')}</strong> {statusText}
           </span>
-          {!isPolling && <span className="text-slate-500">(tracking stopped)</span>}
+          {!isPolling && <span className="text-slate-500">{t('delivery.trackingStopped')}</span>}
         </div>
       </div>
     </div>

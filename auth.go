@@ -26,9 +26,7 @@ func AuthMiddleware(next http.Handler, cfg *Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, ok := GetSessionFromRequest(r)
 		if !ok || !session.Authenticated {
-			writeJSON(w, http.StatusUnauthorized, map[string]any{
-				"error": "Unauthorized",
-			})
+			apiError(w, http.StatusUnauthorized, "unauthorized", nil)
 			return
 		}
 
@@ -43,30 +41,24 @@ func HandleLogin(cfg *Config) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if cfg.AuthMode != "password" {
-			writeJSON(w, http.StatusBadRequest, map[string]any{
-				"error": "Password login is disabled",
-			})
+			apiError(w, http.StatusBadRequest, "password_login_disabled", nil)
 			return
 		}
 
 		var body request
 		if err := decodeJSONBody(r, &body); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": err.Error()})
+			apiError(w, http.StatusBadRequest, errorCodeForDecodeError(err), map[string]string{"detail": err.Error()})
 			return
 		}
 
 		if body.Password != cfg.AccessPassword {
-			writeJSON(w, http.StatusUnauthorized, map[string]any{
-				"error": "Invalid password",
-			})
+			apiError(w, http.StatusUnauthorized, "invalid_password", nil)
 			return
 		}
 
 		session, err := CreateSession(true)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{
-				"error": fmt.Sprintf("failed to create session: %v", err),
-			})
+			apiError(w, http.StatusInternalServerError, "session_create_failed", map[string]string{"detail": err.Error()})
 			return
 		}
 
@@ -102,12 +94,12 @@ func HandleAuthStatus(cfg *Config) http.HandlerFunc {
 func HandleOIDCLogin(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if cfg.AuthMode != "oidc" {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "OIDC auth mode is not enabled"})
+			apiError(w, http.StatusBadRequest, "oidc_not_enabled", nil)
 			return
 		}
 
 		if oauth2Config == nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": "OIDC is not initialized"})
+			apiError(w, http.StatusInternalServerError, "oidc_not_initialized", nil)
 			return
 		}
 
@@ -115,7 +107,7 @@ func HandleOIDCLogin(cfg *Config) http.HandlerFunc {
 
 		state, err := generateOIDCState()
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": "failed to generate OIDC state"})
+			apiError(w, http.StatusInternalServerError, "oidc_state_generate_failed", map[string]string{"detail": err.Error()})
 			return
 		}
 
@@ -131,12 +123,12 @@ func HandleOIDCLogin(cfg *Config) http.HandlerFunc {
 func HandleOIDCCallback(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if cfg.AuthMode != "oidc" {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "OIDC auth mode is not enabled"})
+			apiError(w, http.StatusBadRequest, "oidc_not_enabled", nil)
 			return
 		}
 
 		if oauth2Config == nil || oidcVerifier == nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": "OIDC is not initialized"})
+			apiError(w, http.StatusInternalServerError, "oidc_not_initialized", nil)
 			return
 		}
 
@@ -144,13 +136,13 @@ func HandleOIDCCallback(cfg *Config) http.HandlerFunc {
 		code := r.URL.Query().Get("code")
 
 		if state == "" || code == "" {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "missing state or code"})
+			apiError(w, http.StatusBadRequest, "oidc_missing_state_code", nil)
 			return
 		}
 
 		stored, ok := oidcStates.Load(state)
 		if !ok {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "invalid OIDC state"})
+			apiError(w, http.StatusBadRequest, "oidc_state_invalid", nil)
 			return
 		}
 
@@ -158,30 +150,30 @@ func HandleOIDCCallback(cfg *Config) http.HandlerFunc {
 
 		stateData, ok := stored.(OIDCState)
 		if !ok || stateData.State != state || time.Now().After(stateData.ExpiresAt) {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "expired or invalid OIDC state"})
+			apiError(w, http.StatusBadRequest, "oidc_state_expired", nil)
 			return
 		}
 
 		token, err := oauth2Config.Exchange(context.Background(), code)
 		if err != nil {
-			writeJSON(w, http.StatusUnauthorized, map[string]any{"error": fmt.Sprintf("token exchange failed: %v", err)})
+			apiError(w, http.StatusUnauthorized, "oidc_token_exchange_failed", map[string]string{"detail": err.Error()})
 			return
 		}
 
 		rawIDToken, ok := token.Extra("id_token").(string)
 		if !ok || rawIDToken == "" {
-			writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "missing id_token in token response"})
+			apiError(w, http.StatusUnauthorized, "oidc_missing_id_token", nil)
 			return
 		}
 
 		if _, err := oidcVerifier.Verify(context.Background(), rawIDToken); err != nil {
-			writeJSON(w, http.StatusUnauthorized, map[string]any{"error": fmt.Sprintf("failed to verify id_token: %v", err)})
+			apiError(w, http.StatusUnauthorized, "oidc_verify_failed", map[string]string{"detail": err.Error()})
 			return
 		}
 
 		session, err := CreateSession(true)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": fmt.Sprintf("failed to create session: %v", err)})
+			apiError(w, http.StatusInternalServerError, "session_create_failed", map[string]string{"detail": err.Error()})
 			return
 		}
 

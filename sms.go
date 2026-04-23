@@ -12,25 +12,30 @@ import (
 	"time"
 )
 
+type SMSError struct {
+	Code   string            `json:"code"`
+	Params map[string]string `json:"params,omitempty"`
+}
+
 type SendSMSResult struct {
 	Success   bool           `json:"success"`
-	Message   string         `json:"message,omitempty"`
-	Error     string         `json:"error,omitempty"`
+	Error     *SMSError      `json:"error,omitempty"`
 	Details   map[string]any `json:"details,omitempty"`
 	Reference string         `json:"reference,omitempty"`
 }
 
 type RecipientResult struct {
-	Recipient string `json:"recipient"`
-	Reference string `json:"reference"`
-	Success   bool   `json:"success"`
-	Error     string `json:"error,omitempty"`
+	Recipient string    `json:"recipient"`
+	Reference string    `json:"reference"`
+	Success   bool      `json:"success"`
+	Error     *SMSError `json:"error,omitempty"`
 }
 
 type SendSMSMultiResult struct {
-	Success bool              `json:"success"`
-	Message string            `json:"message,omitempty"`
-	Results []RecipientResult `json:"results"`
+	Success         bool              `json:"success"`
+	SuccessCount    int               `json:"successCount"`
+	RecipientsCount int               `json:"recipientsCount"`
+	Results         []RecipientResult `json:"results"`
 }
 
 type CheckStatusResult struct {
@@ -69,7 +74,10 @@ func SendSMSMulti(token, sender string, recipients []string, message string) (*S
 					Recipient: recipient,
 					Reference: reference,
 					Success:   false,
-					Error:     err.Error(),
+					Error: &SMSError{
+						Code:   "upstream_error",
+						Params: map[string]string{"detail": err.Error()},
+					},
 				}
 				return
 			}
@@ -98,9 +106,10 @@ func SendSMSMulti(token, sender string, recipients []string, message string) (*S
 	}
 
 	return &SendSMSMultiResult{
-		Success: successCount > 0,
-		Message: fmt.Sprintf("SMS sent to %d of %d recipients", successCount, len(recipients)),
-		Results: results,
+		Success:         successCount > 0,
+		SuccessCount:    successCount,
+		RecipientsCount: len(recipients),
+		Results:         results,
 	}, nil
 }
 
@@ -137,7 +146,13 @@ func sendSMSWithReference(token, sender, recipient, message, reference string) (
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return &SendSMSResult{Success: false, Error: "Connection error: " + err.Error()}, nil
+		return &SendSMSResult{
+			Success: false,
+			Error: &SMSError{
+				Code:   "connection_error",
+				Params: map[string]string{"detail": err.Error()},
+			},
+		}, nil
 	}
 	defer resp.Body.Close()
 
@@ -164,26 +179,28 @@ func sendSMSWithReference(token, sender, recipient, message, reference string) (
 
 		return &SendSMSResult{
 			Success:   true,
-			Message:   "SMS sent successfully!",
 			Details:   details,
 			Reference: reference,
 		}, nil
 	}
 
-	errorMessage := fmt.Sprintf("API error (HTTP %d)", resp.StatusCode)
+	params := map[string]string{
+		"status": fmt.Sprintf("%d", resp.StatusCode),
+	}
 	if details, ok := data["details"].(string); ok && details != "" {
-		errorMessage += ": " + details
+		params["detail"] = details
+	} else if messageText, ok := data["message"].(string); ok && messageText != "" {
+		params["detail"] = messageText
 	} else if errorCode, ok := data["errorCode"]; ok {
-		if messageText, ok := data["message"].(string); ok && messageText != "" {
-			errorMessage += ": " + messageText
-		} else {
-			errorMessage += ": Error code " + fmt.Sprintf("%v", errorCode)
-		}
+		params["detail"] = fmt.Sprintf("%v", errorCode)
 	}
 
 	return &SendSMSResult{
 		Success: false,
-		Error:   errorMessage,
+		Error: &SMSError{
+			Code:   "upstream_error",
+			Params: params,
+		},
 		Details: data,
 	}, nil
 }

@@ -1,0 +1,106 @@
+{
+  "app": {
+    "loading": "SMS Sender laden...",
+    "logout": "Uitloggen",
+    "resumeTracking": "Laatste SMS tracken ({{count}} ontvanger)",
+    "resumeTracking_other": "Laatste SMS tracken ({{count}} ontvangers)",
+    "language": {
+      "label": "Taal",
+      "en": "EN",
+      "nl": "NL"
+    }
+  },
+  "login": {
+    "title": "SMS Sender",
+    "descriptionPassword": "Voer je wachtwoord in om verder te gaan.",
+    "descriptionOidc": "Log in om verder te gaan.",
+    "passwordPlaceholder": "Wachtwoord",
+    "submit": "Inloggen",
+    "failed": "Inloggen mislukt",
+    "oidcDefaultButton": "Inloggen"
+  },
+  "sms": {
+    "compose": "SMS opstellen",
+    "sender": "Afzender",
+    "senderPlaceholder": "BedrijfsNaam",
+    "recipients": "Ontvangers",
+    "recipientPlaceholder": "+31612345678",
+    "recipientRemove": "{{recipient}} verwijderen",
+    "message": "Bericht",
+    "messagePlaceholder": "Typ je SMS-bericht",
+    "send": "SMS versturen",
+    "generateCurl": "Genereer cURL",
+    "error": "Fout",
+    "sent": "Verzonden",
+    "validation": "Controleer afzender, ontvangers en bericht.",
+    "sendFailed": "SMS verzenden mislukt.",
+    "sendSuccess": "SMS succesvol verzonden.",
+    "sendSuccessCount": "SMS verzonden naar {{success}} van {{total}} ontvangers."
+  },
+  "charCounter": {
+    "characters": "{{count}} tekens",
+    "unicode": "(Unicode)",
+    "gsm7": "(GSM-7)",
+    "sms_one": "{{count}} SMS",
+    "sms_other": "{{count}} SMS-berichten"
+  },
+  "curl": {
+    "title": "Gegenereerde cURL",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd!"
+  },
+  "delivery": {
+    "title": "Afleverstatus",
+    "stopTracking": "Stop met tracken",
+    "trackingStopped": "(tracking gestopt)",
+    "statusLabel": "Status:",
+    "badgeFailed": "Mislukt",
+    "badgeDelivered": "Afgeleverd",
+    "badgeInProgress": "Bezig",
+    "step": {
+      "sending": "Verzenden",
+      "accepted": "Geaccepteerd",
+      "delivered": "Afgeleverd"
+    },
+    "details": {
+      "title": "Afleverdetails",
+      "operator": "Operator",
+      "country": "Land",
+      "price": "Prijs",
+      "deliveryTime": "Aflevertijd",
+      "ms": "ms"
+    }
+  },
+  "status": {
+    "notStarted": "Nog niet gestart",
+    "fetching": "Status ophalen...",
+    "unknown": "Onbekende status",
+    "trackingStopped": "Tracking gestopt",
+    "checkFailedRetry": "Status check mislukt, opnieuw proberen...",
+    "timeoutReached": "Timeout bereikt"
+  },
+  "errors": {
+    "generic": "Er ging iets mis.",
+    "network": "Netwerkfout.",
+    "fields_required": "Alle velden zijn verplicht.",
+    "refs_required": "De refs-parameter is verplicht.",
+    "invalid_reference_format": "Ongeldig referentieformaat.",
+    "unauthorized": "Niet geautoriseerd.",
+    "password_login_disabled": "Wachtwoord-login is uitgeschakeld.",
+    "invalid_password": "Ongeldig wachtwoord.",
+    "session_create_failed": "Sessie aanmaken mislukt.",
+    "oidc_not_enabled": "OIDC-authenticatie is niet ingeschakeld.",
+    "oidc_not_initialized": "OIDC is niet geïnitialiseerd.",
+    "oidc_state_generate_failed": "Genereren van OIDC-state mislukt.",
+    "oidc_missing_state_code": "State of code ontbreekt.",
+    "oidc_state_invalid": "Ongeldige OIDC-state.",
+    "oidc_state_expired": "Verlopen of ongeldige OIDC-state.",
+    "oidc_token_exchange_failed": "Token-uitwisseling mislukt.",
+    "oidc_missing_id_token": "id_token ontbreekt in het token-antwoord.",
+    "oidc_verify_failed": "Verifiëren van id_token mislukt.",
+    "body_required": "Request body is verplicht.",
+    "invalid_json_body": "Ongeldige JSON body.",
+    "upstream_error": "Upstream-fout.",
+    "connection_error": "Verbindingsfout."
+  }
+}

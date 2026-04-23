@@ -1,0 +1,106 @@
+{
+  "app": {
+    "loading": "Loading SMS Sender...",
+    "logout": "Logout",
+    "resumeTracking": "Track last SMS ({{count}} recipient)",
+    "resumeTracking_other": "Track last SMS ({{count}} recipients)",
+    "language": {
+      "label": "Language",
+      "en": "EN",
+      "nl": "NL"
+    }
+  },
+  "login": {
+    "title": "SMS Sender",
+    "descriptionPassword": "Enter your password to continue.",
+    "descriptionOidc": "Sign in to continue.",
+    "passwordPlaceholder": "Password",
+    "submit": "Login",
+    "failed": "Login failed",
+    "oidcDefaultButton": "Sign in"
+  },
+  "sms": {
+    "compose": "Compose SMS",
+    "sender": "Sender",
+    "senderPlaceholder": "CompanyName",
+    "recipients": "Recipients",
+    "recipientPlaceholder": "+31612345678",
+    "recipientRemove": "Remove {{recipient}}",
+    "message": "Message",
+    "messagePlaceholder": "Type your SMS message",
+    "send": "Send SMS",
+    "generateCurl": "Generate cURL",
+    "error": "Error",
+    "sent": "Sent",
+    "validation": "Check sender, recipients and message.",
+    "sendFailed": "Sending SMS failed.",
+    "sendSuccess": "SMS sent successfully.",
+    "sendSuccessCount": "SMS sent to {{success}} of {{total}} recipients."
+  },
+  "charCounter": {
+    "characters": "{{count}} characters",
+    "unicode": "(Unicode)",
+    "gsm7": "(GSM-7)",
+    "sms_one": "{{count}} SMS",
+    "sms_other": "{{count}} SMS messages"
+  },
+  "curl": {
+    "title": "Generated cURL",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "delivery": {
+    "title": "Delivery status",
+    "stopTracking": "Stop tracking",
+    "trackingStopped": "(tracking stopped)",
+    "statusLabel": "Status:",
+    "badgeFailed": "Failed",
+    "badgeDelivered": "Delivered",
+    "badgeInProgress": "In progress",
+    "step": {
+      "sending": "Sending",
+      "accepted": "Accepted",
+      "delivered": "Delivered"
+    },
+    "details": {
+      "title": "Delivery details",
+      "operator": "Operator",
+      "country": "Country",
+      "price": "Price",
+      "deliveryTime": "Delivery time",
+      "ms": "ms"
+    }
+  },
+  "status": {
+    "notStarted": "Not started",
+    "fetching": "Fetching status...",
+    "unknown": "Unknown status",
+    "trackingStopped": "Tracking stopped",
+    "checkFailedRetry": "Status check failed, retrying...",
+    "timeoutReached": "Timeout reached"
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "network": "Network error.",
+    "fields_required": "All fields are required.",
+    "refs_required": "The refs parameter is required.",
+    "invalid_reference_format": "Invalid reference format.",
+    "unauthorized": "Unauthorized.",
+    "password_login_disabled": "Password login is disabled.",
+    "invalid_password": "Invalid password.",
+    "session_create_failed": "Failed to create session.",
+    "oidc_not_enabled": "OIDC auth mode is not enabled.",
+    "oidc_not_initialized": "OIDC is not initialized.",
+    "oidc_state_generate_failed": "Failed to generate OIDC state.",
+    "oidc_missing_state_code": "Missing state or code.",
+    "oidc_state_invalid": "Invalid OIDC state.",
+    "oidc_state_expired": "Expired or invalid OIDC state.",
+    "oidc_token_exchange_failed": "Token exchange failed.",
+    "oidc_missing_id_token": "Missing id_token in token response.",
+    "oidc_verify_failed": "Failed to verify id_token.",
+    "body_required": "Request body is required.",
+    "invalid_json_body": "Invalid JSON body.",
+    "upstream_error": "Upstream error.",
+    "connection_error": "Connection error."
+  }
+}

@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 
 type RecipientInputProps = {
@@ -13,6 +14,7 @@ function normalizeRecipient(value: string): string {
 }
 
 export function RecipientInput({ recipients, onChange }: RecipientInputProps) {
+  const { t } = useTranslation()
   const [inputValue, setInputValue] = useState('')
 
   const remove = (recipient: string) => {
@@ -65,7 +67,7 @@ export function RecipientInput({ recipients, onChange }: RecipientInputProps) {
             type="button"
             onClick={() => remove(recipient)}
             className="ml-0.5 rounded-full hover:bg-indigo-200"
-            aria-label={`Remove ${recipient}`}
+            aria-label={t('sms.recipientRemove', { recipient })}
           >
             <X className="size-3" />
           </button>
@@ -78,7 +80,7 @@ export function RecipientInput({ recipients, onChange }: RecipientInputProps) {
         onChange={(event) => setInputValue(event.target.value.replace(/[^\d+ ]/g, ''))}
         onKeyDown={handleKeyDown}
         onBlur={tryAddRecipient}
-        placeholder={recipients.length === 0 ? '+31612345678' : ''}
+        placeholder={recipients.length === 0 ? t('sms.recipientPlaceholder') : ''}
       />
     </div>
   )

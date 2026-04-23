@@ -12,6 +12,17 @@ import (
 
 var referencePattern = regexp.MustCompile(`^sms-\d+-\d+$`)
 
+type APIErrorPayload struct {
+	Code   string            `json:"code"`
+	Params map[string]string `json:"params,omitempty"`
+}
+
+func apiError(w http.ResponseWriter, status int, code string, params map[string]string) {
+	writeJSON(w, status, map[string]any{
+		"error": APIErrorPayload{Code: code, Params: params},
+	})
+}
+
 func HandleSendSMS(cfg *Config) http.HandlerFunc {
 	type request struct {
 		Sender     string   `json:"sender"`
@@ -22,7 +33,7 @@ func HandleSendSMS(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body request
 		if err := decodeJSONBody(r, &body); err != nil {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": err.Error()})
+			apiError(w, http.StatusBadRequest, errorCodeForDecodeError(err), map[string]string{"detail": err.Error()})
 			return
 		}
 
@@ -39,13 +50,13 @@ func HandleSendSMS(cfg *Config) http.HandlerFunc {
 		}
 
 		if body.Sender == "" || body.Message == "" || len(recipients) == 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "All fields are required"})
+			apiError(w, http.StatusBadRequest, "fields_required", nil)
 			return
 		}
 
 		result, err := SendSMSMulti(cfg.CMProductToken, body.Sender, recipients, body.Message)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
+			apiError(w, http.StatusInternalServerError, "upstream_error", map[string]string{"detail": err.Error()})
 			return
 		}
 
@@ -62,7 +73,7 @@ func HandleCheckStatus(cfg *Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		referencesRaw := strings.TrimSpace(r.URL.Query().Get("refs"))
 		if referencesRaw == "" {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "refs parameter required"})
+			apiError(w, http.StatusBadRequest, "refs_required", nil)
 			return
 		}
 
@@ -75,7 +86,7 @@ func HandleCheckStatus(cfg *Config) http.HandlerFunc {
 			}
 
 			if !referencePattern.MatchString(reference) {
-				writeJSON(w, http.StatusBadRequest, map[string]any{"error": "Invalid reference format"})
+				apiError(w, http.StatusBadRequest, "invalid_reference_format", map[string]string{"reference": reference})
 				return
 			}
 
@@ -83,13 +94,13 @@ func HandleCheckStatus(cfg *Config) http.HandlerFunc {
 		}
 
 		if len(references) == 0 {
-			writeJSON(w, http.StatusBadRequest, map[string]any{"error": "refs parameter required"})
+			apiError(w, http.StatusBadRequest, "refs_required", nil)
 			return
 		}
 
 		results, err := CheckStatusMulti(cfg.CMProductToken, references)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
+			apiError(w, http.StatusInternalServerError, "upstream_error", map[string]string{"detail": err.Error()})
 			return
 		}
 
@@ -118,20 +129,37 @@ func writeJSON(w http.ResponseWriter, status int, payload any) {
 	}
 }
 
+var (
+	errBodyRequired   = errors.New("request body is required")
+	errInvalidJSON    = errors.New("invalid JSON body")
+	errMultipleValues = errors.New("invalid JSON body: multiple JSON values found")
+)
+
+func errorCodeForDecodeError(err error) string {
+	switch {
+	case errors.Is(err, errBodyRequired):
+		return "body_required"
+	case errors.Is(err, errMultipleValues):
+		return "invalid_json_body"
+	default:
+		return "invalid_json_body"
+	}
+}
+
 func decodeJSONBody(r *http.Request, target any) error {
 	if r.Body == nil {
-		return errors.New("request body is required")
+		return errBodyRequired
 	}
 	defer r.Body.Close()
 
 	dec := json.NewDecoder(io.LimitReader(r.Body, 1<<20))
 
 	if err := dec.Decode(target); err != nil {
-		return fmt.Errorf("invalid JSON body: %w", err)
+		return fmt.Errorf("%w: %v", errInvalidJSON, err)
 	}
 
 	if dec.More() {
-		return errors.New("invalid JSON body: multiple JSON values found")
+		return errMultipleValues
 	}
 
 	return nil

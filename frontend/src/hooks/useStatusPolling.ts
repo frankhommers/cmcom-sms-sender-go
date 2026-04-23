@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { checkStatus, checkStatusMulti, type StatusResult } from '@/lib/api'
 
@@ -41,13 +42,15 @@ function extractRecipientFromReference(reference: string): string {
 }
 
 export function useStatusPolling(reference: string | null): PollingState {
+  const { t } = useTranslation()
   const [statusCode, setStatusCode] = useState<number | null>(null)
-  const [statusText, setStatusText] = useState('Nog niet gestart')
+  const [statusText, setStatusText] = useState(() => t('status.notStarted'))
   const [details, setDetails] = useState<StatusDetails | null>(null)
   const [isPolling, setIsPolling] = useState(false)
 
   const intervalRef = useRef<number | null>(null)
   const timeoutRef = useRef<number | null>(null)
+  const timeoutReachedRef = useRef(false)
 
   const clearTimers = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -64,24 +67,26 @@ export function useStatusPolling(reference: string | null): PollingState {
   const stopPolling = useCallback(() => {
     clearTimers()
     setIsPolling(false)
-    setStatusText((current) =>
-      current === 'Timeout bereikt' ? current : 'Tracking gestopt',
-    )
-  }, [clearTimers])
+    if (!timeoutReachedRef.current) {
+      setStatusText(t('status.trackingStopped'))
+    }
+  }, [clearTimers, t])
 
   useEffect(() => {
     if (!reference) {
       clearTimers()
       setStatusCode(null)
-      setStatusText('Nog niet gestart')
+      setStatusText(t('status.notStarted'))
       setDetails(null)
       setIsPolling(false)
+      timeoutReachedRef.current = false
       return
     }
 
     let active = true
+    timeoutReachedRef.current = false
     setIsPolling(true)
-    setStatusText('Status ophalen...')
+    setStatusText(t('status.fetching'))
 
     const poll = async () => {
       if (!active) {
@@ -96,7 +101,7 @@ export function useStatusPolling(reference: string | null): PollingState {
 
         setDetails(result)
         setStatusCode(result.statusCode)
-        setStatusText(result.status || 'Onbekende status')
+        setStatusText(result.status || t('status.unknown'))
 
         if (result.statusCode !== null && DEFINITIVE_STATUS_CODES.has(result.statusCode)) {
           localStorage.removeItem('sms_last_ref')
@@ -108,7 +113,7 @@ export function useStatusPolling(reference: string | null): PollingState {
           return
         }
 
-        setStatusText('Status check mislukt, opnieuw proberen...')
+        setStatusText(t('status.checkFailedRetry'))
       }
     }
 
@@ -123,9 +128,10 @@ export function useStatusPolling(reference: string | null): PollingState {
         return
       }
 
+      timeoutReachedRef.current = true
       clearTimers()
       setIsPolling(false)
-      setStatusText('Timeout bereikt')
+      setStatusText(t('status.timeoutReached'))
     }, POLL_TIMEOUT_MS)
 
     return () => {
@@ -133,7 +139,7 @@ export function useStatusPolling(reference: string | null): PollingState {
       clearTimers()
       setIsPolling(false)
     }
-  }, [reference, clearTimers])
+  }, [reference, clearTimers, t])
 
   return {
     statusCode,
@@ -145,6 +151,7 @@ export function useStatusPolling(reference: string | null): PollingState {
 }
 
 export function useMultiStatusPolling(references: string[]): MultiPollingState {
+  const { t } = useTranslation()
   const [statuses, setStatuses] = useState<RecipientStatus[]>([])
   const [isPolling, setIsPolling] = useState(false)
   const [allComplete, setAllComplete] = useState(false)
@@ -169,7 +176,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
     setIsPolling(false)
     setStatuses((current) =>
       current.map((status) => {
-        if (status.statusText === 'Timeout bereikt') {
+        if (status.statusText === t('status.timeoutReached')) {
           return status
         }
 
@@ -179,11 +186,11 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
 
         return {
           ...status,
-          statusText: 'Tracking gestopt',
+          statusText: t('status.trackingStopped'),
         }
       }),
     )
-  }, [clearTimers])
+  }, [clearTimers, t])
 
   useEffect(() => {
     if (references.length === 0) {
@@ -202,7 +209,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
         reference,
         recipient: extractRecipientFromReference(reference),
         statusCode: null,
-        statusText: 'Status ophalen...',
+        statusText: t('status.fetching'),
         details: null,
       })),
     )
@@ -226,7 +233,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
               reference,
               recipient: extractRecipientFromReference(reference),
               statusCode: null,
-              statusText: 'Onbekende status',
+              statusText: t('status.unknown'),
               details: null,
             }
           }
@@ -235,7 +242,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
             reference,
             recipient: extractRecipientFromReference(reference),
             statusCode: statusResult.statusCode,
-            statusText: statusResult.status || 'Onbekende status',
+            statusText: statusResult.status || t('status.unknown'),
             details: statusResult,
           }
         })
@@ -262,7 +269,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
         setStatuses((current) =>
           current.map((status) => ({
             ...status,
-            statusText: 'Status check mislukt, opnieuw proberen...',
+            statusText: t('status.checkFailedRetry'),
           })),
         )
       }
@@ -289,7 +296,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
 
           return {
             ...status,
-            statusText: 'Timeout bereikt',
+            statusText: t('status.timeoutReached'),
           }
         }),
       )
@@ -300,7 +307,7 @@ export function useMultiStatusPolling(references: string[]): MultiPollingState {
       clearTimers()
       setIsPolling(false)
     }
-  }, [references, clearTimers])
+  }, [references, clearTimers, t])
 
   return {
     statuses,
