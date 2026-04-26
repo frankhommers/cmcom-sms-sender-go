@@ -134,35 +134,31 @@ export function DeliveryProgress({
                 ))}
               </div>
 
-              {recipientStatus.details && (
-                <div className="mt-2">
-                  <div className="text-[11px] font-medium text-slate-600">{t('delivery.details.title')}</div>
-                  <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-700">
-                    {recipientStatus.details.operator && (
-                      <span>
-                        {t('delivery.details.operator')}: {recipientStatus.details.operator}
-                      </span>
-                    )}
-                    {recipientStatus.details.country && (
-                      <span>
-                        {t('delivery.details.country')}: {recipientStatus.details.country}
-                      </span>
-                    )}
-                    {typeof recipientStatus.details.price === 'number' && (
-                      <span>
-                        {t('delivery.details.price')}: {recipientStatus.details.price}{' '}
-                        {recipientStatus.details.currency ?? ''}
-                      </span>
-                    )}
-                    {typeof recipientStatus.details.deliveryTime === 'number' && (
-                      <span>
-                        {t('delivery.details.deliveryTime')}: {recipientStatus.details.deliveryTime}{' '}
-                        {t('delivery.details.ms')}
-                      </span>
-                    )}
-                  </div>
+              <div className="mt-2">
+                <div className="text-[11px] font-medium text-slate-600">{t('delivery.details.title')}</div>
+                <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-700">
+                  <span>
+                    {t('delivery.details.operator')}:{' '}
+                    {recipientStatus.details?.operator ?? '—'}
+                  </span>
+                  <span>
+                    {t('delivery.details.country')}:{' '}
+                    {recipientStatus.details?.country ?? '—'}
+                  </span>
+                  <span>
+                    {t('delivery.details.price')}:{' '}
+                    {typeof recipientStatus.details?.price === 'number'
+                      ? `${recipientStatus.details.price} ${recipientStatus.details.currency ?? ''}`.trim()
+                      : '—'}
+                  </span>
+                  <span>
+                    {t('delivery.details.deliveryTime')}:{' '}
+                    {typeof recipientStatus.details?.deliveryTime === 'number'
+                      ? `${recipientStatus.details.deliveryTime} ${t('delivery.details.ms')}`
+                      : '—'}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
           )
         })}
